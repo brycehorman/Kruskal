@@ -5,6 +5,7 @@ import javax.swing.event.*;
 import java.awt.geom.*;
 import java.util.*;
 import java.lang.NumberFormatException;
+import java.awt.geom.Line2D;
 public class Kruskal extends JFrame implements ActionListener, MouseListener, MouseMotionListener{
 	
 	final int NODE_RADIUS = 5;
@@ -17,8 +18,9 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	private JButton mstButton;
 	private JButton addEdge;
 	private JButton addNode;
-	private JButton deleteButton;
+	private JButton delete;
 	private JTextField enterWeight;
+	private JButton editWeight;
 	private CanvasPanel canvas;
 	LinkedList<Point> vertices;
 	LinkedList<Point[]> edges;
@@ -28,9 +30,10 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	Point clickedV2;
 	Point[] selectedE1;
 	Point[] clickedE1;
+	
 
 	enum State{
-		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE;
+		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT;
 	}
 	State state;
 	private boolean onVertex;
@@ -43,6 +46,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 		edges = new LinkedList<>();
 		edgeWeights = new LinkedList<>();
 		onVertex = false;
+		onEdge = false;
 		selectedV1 = null;
 		clickedV1 = null;
 		clickedV2 = null;
@@ -105,19 +109,31 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 				canvas.repaint();
 			}
 		}
-		else if(buttonIdentifier.equals("deleteButton")){
+
+		else if(buttonIdentifier.equals("delete")){
 			if(state != State.DELETE){
 				state = State.DELETE;
 				selectedV1 = null;
 				clickedV1 = null;
+				selectedE1 = null;
+				clickedE1 = null;
 				canvas.repaint();
 			}
 		}
-		
+		else if(buttonIdentifier.equals("editWeight")){
+			if(state != State.EDIT){
+				state = State.EDIT;
+				selectedE1 = null;
+				clickedE1 = null;
+				canvas.repaint();
+			}
+		}
+	
 	}
 
 	public void mouseClicked(MouseEvent e) {
 		Point click_point = e.getPoint();
+		String w = "";
 		if(onVertex && state == State.DELETE){
 			vertices.remove(selectedV1);
 		}
@@ -131,7 +147,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 				clickedV2 = selectedV1;
 				Point[] points = {clickedV1, clickedV2};
 				edges.add(points);
-				String w = enterWeight.getText();
+				w = enterWeight.getText();
 				if(isParsable(w)){
 					edgeWeights.add(Integer.parseInt(w));
 				}
@@ -141,12 +157,24 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			else{
 				clickedV1 = null;
 			}
-			
-
-
 		}
 		else if (state == State.NODE){
 			vertices.add(click_point);
+		}
+		else if(onEdge && state == State.DELETE){
+			edges.remove(selectedE1);
+			edgeWeights.remove(edges.indexOf(selectedE1));
+		}
+		else if(onEdge && state == State.EDIT){
+			if(clickedE1 != selectedE1){
+			String w2 = enterWeight.getText();
+				if(isParsable(w2)){
+					edgeWeights.remove(edges.indexOf(selectedE1));
+					edgeWeights.add(edges.indexOf(selectedE1), Integer.parseInt(w2));
+				}
+			}
+			else
+				clickedE1 = null;
 		}
 		canvas.repaint();
     }
@@ -166,7 +194,12 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     		selectedV1 = null;
     		onVertex = false;
     		canvas.repaint();
-    	}
+		}
+		else if(onEdge){
+			selectedE1 = null;
+			onEdge = false;
+			canvas.repaint();
+		}
     	Point mousePoint = e.getPoint();
     	Point v1 = mouseonPoint(mousePoint);
     	Point[] e1 = mouseonEdge(mousePoint);
@@ -174,7 +207,12 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     		selectedV1 = v1;
     		onVertex = true;
     		canvas.repaint();
-    	}
+		}
+		if(e1 != null && (state == State.DELETE || state == State.EDIT)){
+			selectedE1 = e1;
+			onEdge = true;
+			canvas.repaint();
+		}
     }
 
     public void createPanels(){
@@ -205,54 +243,77 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     }
     public void addText(){
     	//make the clear button
-    	Dimension buttonSize = new Dimension(100, 50);
-    	clearButton = new JButton("Clear");
+		Dimension buttonSize = new Dimension(90, 50);
+		Dimension buttonSize2 = new Dimension(40, 30);
+		clearButton = new JButton("Clear");
+		clearButton.setFont(new Font("Arial", Font.PLAIN, 12));
     	clearButton.setMinimumSize(buttonSize);
 		clearButton.setPreferredSize(buttonSize);
 		clearButton.setMaximumSize(buttonSize);
 		clearButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		clearButton.setActionCommand("clear");
 		clearButton.addActionListener(this);
+
 		//make the mst button
 		mstButton = new JButton("Compute MST");
+		mstButton.setFont(new Font("Arial", Font.PLAIN, 12));
     	mstButton.setMinimumSize(buttonSize);
 		mstButton.setPreferredSize(buttonSize);
 		mstButton.setMaximumSize(buttonSize);
 		mstButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		mstButton.setActionCommand("computeMST");
 		mstButton.addActionListener(this);
+
 		//make the add edge button
-    	addEdge = new JButton("Edge Mode");
+		addEdge = new JButton("Edge Mode");
+		addEdge.setFont(new Font("Arial", Font.PLAIN, 12));
     	addEdge.setMinimumSize(buttonSize);
 		addEdge.setPreferredSize(buttonSize);
 		addEdge.setMaximumSize(buttonSize);
 		addEdge.setAlignmentX(Component.CENTER_ALIGNMENT);
 		addEdge.setActionCommand("addEdge");
 		addEdge.addActionListener(this);
+
 		//make the node button
 		addNode = new JButton("Node Mode");
+		addNode.setFont(new Font("Arial", Font.PLAIN, 12));
     	addNode.setMinimumSize(buttonSize);
 		addNode.setPreferredSize(buttonSize);
 		addNode.setMaximumSize(buttonSize);
 		addNode.setAlignmentX(Component.CENTER_ALIGNMENT);
 		addNode.setActionCommand("addNode");
 		addNode.addActionListener(this);
-		//Make delete button
-		deleteButton = new JButton("Delete Mode");
-    	deleteButton.setMinimumSize(buttonSize);
-		deleteButton.setPreferredSize(buttonSize);
-		deleteButton.setMaximumSize(buttonSize);
-		deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		deleteButton.setActionCommand("deleteButton");
-		deleteButton.addActionListener(this);
+
+		// Make delete button
+		delete = new JButton("Delete");
+		delete.setFont(new Font("Arial", Font.PLAIN, 12));
+    	delete.setMinimumSize(buttonSize);
+		delete.setPreferredSize(buttonSize);
+		delete.setMaximumSize(buttonSize);
+		delete.setAlignmentX(Component.CENTER_ALIGNMENT);
+		delete.setActionCommand("delete");
+		delete.addActionListener(this);
+
+		// Make edit weight button
+		editWeight = new JButton("Edit Weight");
+		editWeight.setFont(new Font("Arial", Font.PLAIN, 12));
+		editWeight.setMinimumSize(buttonSize);
+		editWeight.setPreferredSize(buttonSize);
+		editWeight.setMaximumSize(buttonSize);
+		editWeight.setAlignmentX(Component.CENTER_ALIGNMENT);
+		editWeight.setActionCommand("editWeight");
+		editWeight.addActionListener(this);
+
 		//make weight text field
 		enterWeight = new JTextField();
-		enterWeight.setMinimumSize(buttonSize);
-		enterWeight.setPreferredSize(buttonSize);
-		enterWeight.setMaximumSize(buttonSize);
+		enterWeight.setMinimumSize(buttonSize2);
+		enterWeight.setPreferredSize(buttonSize2);
+		enterWeight.setMaximumSize(buttonSize2);
 		enterWeight.setAlignmentX(Component.CENTER_ALIGNMENT);
 		//add label for weight
-		JLabel weightText = new JLabel("Input weight here: ");
+		JLabel weightText = new JLabel("Input weight: ");
+		weightText.setFont(new Font("Arial", Font.PLAIN, 12));
+		
 		//add buttons to top button panel
 		buttonPanel.add(Box.createHorizontalGlue());
 		buttonPanel.add(clearButton);
@@ -263,14 +324,15 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 		buttonPanel.add(Box.createHorizontalGlue());
 		buttonPanel.add(addNode);
 		buttonPanel.add(Box.createHorizontalGlue());
-		buttonPanel.add(deleteButton);
+		buttonPanel.add(delete);
+		buttonPanel.add(Box.createHorizontalGlue());
+		buttonPanel.add(editWeight);
 		buttonPanel.add(Box.createHorizontalGlue());
 		buttonPanel.add(weightText);
 		buttonPanel.add(enterWeight);
 		buttonPanel.add(Box.createHorizontalGlue());
     }
     
-
 	public boolean isParsable(String input){
 	    try{
 	        Integer.parseInt(input);
@@ -297,8 +359,12 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			Point[] e = (Point[])iter.next();
 			Point e1 = e[0];
 			Point e2 = e[1];
-			double m = (e1.y - e2.y) / (e1.x - e2.x);
-			if(p.y - e1.y == m*(p.x - e1.x)){
+			
+			// distance from line to mouse point
+			double distance = Line2D.ptSegDist(e1.x, e1.y, e2.x, e2.y, p.x, p.y);
+			
+			// if close to mouse point
+			if (distance < 3) {
 				return e;
 			}
 		}
