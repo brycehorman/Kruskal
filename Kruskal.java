@@ -8,7 +8,7 @@ import java.lang.NumberFormatException;
 import java.awt.geom.Line2D;
 public class Kruskal extends JFrame implements ActionListener, MouseListener, MouseMotionListener{
 	
-	final int NODE_RADIUS = 5;
+	final int NODE_RADIUS = 7;
 	private int count = 0;
 	private JLabel label;
 	private JFrame frame;
@@ -24,7 +24,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	private CanvasPanel canvas;
 	LinkedList<Point> vertices;
 	LinkedList<Point[]> edges;
-	LinkedList<Integer> edgeWeights;
+	LinkedList<Double> edgeWeights;
 	Point selectedV1;
 	Point clickedV1;
 	Point clickedV2;
@@ -159,6 +159,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			for(int i = 0; i < edges.size(); i++){
 				if(edges.get(i)[0] == selectedV1 || edges.get(i)[1] == selectedV1){
 					edges.remove(i);
+					edgeWeights.remove(i);
 					i--;
 				}
 			}
@@ -176,12 +177,10 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 				count++;
 				w = enterWeight.getText();
 				if(isParsable(w)){
-					edgeWeights.add(Integer.parseInt(w));
-					//graph.edge[count].weight = Integer.parseInt(w);
+					edgeWeights.add(Double.parseDouble(w));
 				}
 				else
-					edgeWeights.add(1);
-					//graph.edge[count].weight = 1;
+					edgeWeights.add(1.0);
 			}
 			else{
 				clickedV1 = null;
@@ -198,8 +197,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			if(clickedE1 != selectedE1){
 			String w2 = enterWeight.getText();
 				if(isParsable(w2)){
-					edgeWeights.remove(edges.indexOf(selectedE1));
-					edgeWeights.add(edges.indexOf(selectedE1), Integer.parseInt(w2));
+					edgeWeights.set(edges.indexOf(selectedE1), Double.parseDouble(w2));
 				}
 			}
 			else
@@ -237,7 +235,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     		onVertex = true;
     		canvas.repaint();
 		}
-		if(e1 != null && (state == State.DELETE || state == State.EDIT)){
+		if(e1 != null && (state == State.DELETE || state == State.EDIT) && !onVertex){
 			selectedE1 = e1;
 			onEdge = true;
 			canvas.repaint();
@@ -364,7 +362,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     
 	public boolean isParsable(String input){
 	    try{
-	        Integer.parseInt(input);
+	        Double.parseDouble(input);
 	        return true;
 	    }catch(NumberFormatException e){
 	        return false;
@@ -406,12 +404,22 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 
         // Class to represent an edge in graph
         class Edge implements Comparable<Edge>{ 
-			int from, to, weight; 
+			int from, to;
+			double weight; 
     
             // Comparator for sorting edges by weight 
             public int compareTo(Edge compareEdge) 
             { 
-                return this.weight - compareEdge.weight; 
+            	if(this.weight > compareEdge.weight){
+            		return 1;
+            	}
+            	else if(this.weight < compareEdge.weight){
+            		return -1;
+            	}
+            	else{
+            		return 0;
+            	}
+                //return this.weight - compareEdge.weight; 
             } 
         }; 
     
