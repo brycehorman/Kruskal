@@ -34,7 +34,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	
 
 	enum State{
-		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT;
+		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT, MST;
 	}
 	State state;
 	private boolean onVertex;
@@ -96,6 +96,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			canvas.repaint();
 		}
 		else if (buttonIdentifier.equals("computeMST")){
+			state = State.MST;
 			graph = new Graph(vertices.size(), edges.size()); 
 			for(int i = 0; i < edges.size(); i++){
 				Point from = edges.get(i)[0];
