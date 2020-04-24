@@ -14,6 +14,7 @@ public class CanvasPanel extends JPanel{
 	Point clickedV1;
 	Point[] selectedE1;
 	Point[] clickedE1;
+	LinkedList theMST = null;
 
 	public CanvasPanel(Kruskal _parent){
 		super();
@@ -21,6 +22,7 @@ public class CanvasPanel extends JPanel{
 		vertices = parent.vertices;
 		edges = parent.edges;
 		edgeWeights = parent.edgeWeights;
+		theMST = parent.theMST;
 
 	}
 
@@ -90,5 +92,7 @@ public class CanvasPanel extends JPanel{
 				}
 		
 			}
+
+
 	}
 }

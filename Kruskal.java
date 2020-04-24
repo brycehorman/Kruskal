@@ -30,11 +30,12 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	Point clickedV2;
 	Point[] selectedE1;
 	Point[] clickedE1;
-	Graph graph = new Graph(vertices.size(), edges.size()); 
+	Graph graph; 
+	LinkedList<Point[]> theMST;
 	
 
 	enum State{
-		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT;
+		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT, MST;
 	}
 	State state;
 	private boolean onVertex;
@@ -46,6 +47,8 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 		vertices = new LinkedList<>();
 		edges = new LinkedList<>();
 		edgeWeights = new LinkedList<>();
+		graph = new Graph(vertices.size(), edges.size());
+		theMST = new LinkedList<>();
 		onVertex = false;
 		onEdge = false;
 		selectedV1 = null;
@@ -94,6 +97,10 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			canvas.repaint();
 		}
 		else if (buttonIdentifier.equals("computeMST")){
+			if(state != State.MST){
+				state = State.MST;
+				canvas.repaint();
+			}
 
 		}
 		else if (buttonIdentifier.equals("addEdge")){
@@ -182,6 +189,9 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			}
 			else
 				clickedE1 = null;
+		}
+		else if(state == State.MST){
+			theMST = graph.getMST();
 		}
 		canvas.repaint();
     }
@@ -396,7 +406,8 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     
         // Class to represent a subset for union-find 
         class Subset{ 
-            int parent, rank; 
+			int rank; 
+			Point parent;
         }; 
     
         int V, E;    
@@ -442,7 +453,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
         } 
     
         // Find MST using Kruskal's algorithm 
-        Edge[] KruskalMST() {
+        LinkedList<Point[]> getMST() {
 
             Edge result[] = new Edge[V];  
             int j = 0;  
@@ -482,8 +493,17 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
                     Union(subsets, x, y); 
                 } 
             } 
+			
+			LinkedList<Point[]> mst = new LinkedList<Point[]>();
+			Point[] mstPoints = new Point[j];
+			for (i = 0; i < j; ++i){
+				mstPoints[0] = result[i].from;
+				mstPoints[1] = result[i].to;
+				mst.add(mstPoints);
+			}
 
-            return result;
+			return mst;
+			
         }
 
     }
