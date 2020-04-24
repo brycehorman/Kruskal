@@ -6,7 +6,7 @@ import java.awt.geom.*;
 import java.util.*;
 public class CanvasPanel extends JPanel{
 	
-	LinkedList vertices = null;
+	LinkedList<Point> vertices = null;
 	LinkedList edges = null;
 	LinkedList edgeWeights = null;
 	Kruskal parent = null;
@@ -14,7 +14,8 @@ public class CanvasPanel extends JPanel{
 	Point clickedV1;
 	Point[] selectedE1;
 	Point[] clickedE1;
-	LinkedList theMST = null;
+	Kruskal.Graph graph;
+	Kruskal.Graph.Edge[] mst;
 
 	public CanvasPanel(Kruskal _parent){
 		super();
@@ -22,7 +23,6 @@ public class CanvasPanel extends JPanel{
 		vertices = parent.vertices;
 		edges = parent.edges;
 		edgeWeights = parent.edgeWeights;
-		theMST = parent.theMST;
 
 	}
 
@@ -92,7 +92,18 @@ public class CanvasPanel extends JPanel{
 				}
 		
 			}
+		graph = parent.graph;
+		if(graph != null){
+			mst = graph.KruskalMST();
+			for(int i = 0; i < graph.E; i++){
+				g.setColor(Color.yellow);
+				Point x1 = vertices.get(mst[i].from);
+				Point x2 = vertices.get(mst[i].to);
+				
+				g.drawLine(x1.x, x1.y, x2.x, x2.y);
+			}
+			
 
-
+		}
 	}
 }
