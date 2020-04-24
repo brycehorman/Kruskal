@@ -150,6 +150,12 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 		int count = 0;
 		if(onVertex && state == State.DELETE){
 			vertices.remove(selectedV1);
+			for(int i = 0; i < edges.size(); i++){
+				if(edges.get(i)[0] == selectedV1 || edges.get(i)[1] == selectedV1){
+					edges.remove(i);
+					i--;
+				}
+			}
 		}
 		else if(onVertex && state == State.ADD_EDGE_1){
 			state = State.ADD_EDGE_2;
