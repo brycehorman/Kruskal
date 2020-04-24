@@ -92,10 +92,11 @@ public class CanvasPanel extends JPanel{
 				}
 		
 			}
-		graph = parent.graph;
-		if(graph != null){
+		
+		if(parent.state == Kruskal.State.MST){
+			graph = parent.graph;
 			mst = graph.KruskalMST();
-			for(int i = 0; i < graph.E; i++){
+			for(int i = 0; i < mst.length; i++){
 				g.setColor(Color.yellow);
 				Point x1 = vertices.get(mst[i].from);
 				Point x2 = vertices.get(mst[i].to);
