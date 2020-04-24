@@ -96,18 +96,23 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			canvas.repaint();
 		}
 		else if (buttonIdentifier.equals("computeMST")){
-			state = State.MST;
-			graph = new Graph(vertices.size(), edges.size()); 
-			for(int i = 0; i < edges.size(); i++){
-				Point from = edges.get(i)[0];
-				Point to = edges.get(i)[1];
-				int f = vertices.indexOf(from);
-				int t = vertices.indexOf(to);
-				graph.edge[i].from = f;
-				graph.edge[i].to = t;
-				graph.edge[i].weight = edgeWeights.get(i);
+			if(vertices.size() > edges.size() + 1){
+
 			}
-			canvas.repaint();
+			else{
+				state = State.MST;
+				graph = new Graph(vertices.size(), edges.size()); 
+				for(int i = 0; i < edges.size(); i++){
+					Point from = edges.get(i)[0];
+					Point to = edges.get(i)[1];
+					int f = vertices.indexOf(from);
+					int t = vertices.indexOf(to);
+					graph.edge[i].from = f;
+					graph.edge[i].to = t;
+					graph.edge[i].weight = edgeWeights.get(i);
+				}
+				canvas.repaint();
+			}
 		}
 		else if (buttonIdentifier.equals("addEdge")){
 			if(state != State.ADD_EDGE_1 || state != State.ADD_EDGE_2){
