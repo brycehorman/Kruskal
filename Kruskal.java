@@ -30,6 +30,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	Point clickedV2;
 	Point[] selectedE1;
 	Point[] clickedE1;
+	Graph graph = new Graph(vertices.size(), edges.size()); 
 	
 
 	enum State{
@@ -134,6 +135,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	public void mouseClicked(MouseEvent e) {
 		Point click_point = e.getPoint();
 		String w = "";
+		int count = 0;
 		if(onVertex && state == State.DELETE){
 			vertices.remove(selectedV1);
 		}
@@ -147,12 +149,17 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 				clickedV2 = selectedV1;
 				Point[] points = {clickedV1, clickedV2};
 				edges.add(points);
+				graph.edge[count].from = clickedV1;
+				graph.edge[count].to = clickedV2;
+				count++;
 				w = enterWeight.getText();
 				if(isParsable(w)){
 					edgeWeights.add(Integer.parseInt(w));
+					graph.edge[count].weight = Integer.parseInt(w);
 				}
 				else
-					edgeWeights.add(0);
+					edgeWeights.add(1);
+					graph.edge[count].weight = 1;
 			}
 			else{
 				clickedV1 = null;
@@ -370,4 +377,116 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 		}
 		return null;
 	}
+
+
+
+	class Graph{ 
+
+        // Class to represent an edge in graph
+        class Edge implements Comparable<Edge>{ 
+			Point from, to;
+            int weight; 
+    
+            // Comparator for sorting edges by weight 
+            public int compareTo(Edge compareEdge) 
+            { 
+                return this.weight - compareEdge.weight; 
+            } 
+        }; 
+    
+        // Class to represent a subset for union-find 
+        class Subset{ 
+            int parent, rank; 
+        }; 
+    
+        int V, E;    
+        Edge edge[]; 
+    
+        // Creates a graph with V vertices and E edges 
+        Graph(int v, int e){ 
+            V = v; 
+            E = e; 
+            edge = new Edge[E]; 
+            for (int i = 0; i < e; ++i){
+                edge[i] = new Edge(); 
+            }
+        } 
+    
+        // Finds set of an element 
+        Point find(Subset subsets[], int i) 
+        { 
+            if (subsets[i].parent != i){
+                subsets[i].parent = find(subsets, subsets[i].parent); 
+            }
+    
+            return subsets[i].parent; 
+        } 
+    
+        // Finds union of two sets 
+        void Union(Subset subsets[], int x, int y){ 
+            int xroot = find(subsets, x); 
+            int yroot = find(subsets, y); 
+    
+            // Put smaller rank tree under root of high rank tree 
+            if (subsets[xroot].rank < subsets[yroot].rank) 
+                subsets[xroot].parent = yroot; 
+            else if (subsets[xroot].rank > subsets[yroot].rank) 
+                subsets[yroot].parent = xroot; 
+    
+            // If same rank, then make one as root and increment by one
+            else
+            { 
+                subsets[yroot].parent = xroot; 
+                subsets[xroot].rank++; 
+            } 
+        } 
+    
+        // Find MST using Kruskal's algorithm 
+        Edge[] KruskalMST() {
+
+            Edge result[] = new Edge[V];  
+            int j = 0;  
+            int i = 0; 
+
+            for (i = 0; i < V; ++i){
+                result[i] = new Edge();
+            } 
+    
+            // Sort all edges in non-decreasing order by weight
+            Arrays.sort(edge); 
+    
+            Subset subsets[] = new Subset[V]; 
+            for(i = 0; i < V; ++i){
+                subsets[i] = new Subset(); 
+            }
+    
+            // Create V subsets with single elements 
+            for (int v = 0; v < V; ++v) 
+            { 
+                subsets[v].parent = v; 
+                subsets[v].rank = 0; 
+            } 
+    
+            i = 0;  
+    
+            while (j < V - 1){ 
+                Edge next = new Edge(); 
+                next = edge[i++]; 
+    
+                int x = find(subsets, next.from); 
+                int y = find(subsets, next.to); 
+    
+                // If edge does't cause cycle, include in result 
+                if (x != y){ 
+                    result[j++] = next; 
+                    Union(subsets, x, y); 
+                } 
+            } 
+
+            return result;
+        }
+
+    }
+    
+	
 }
