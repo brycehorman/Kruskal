@@ -30,12 +30,11 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 	Point clickedV2;
 	Point[] selectedE1;
 	Point[] clickedE1;
-	Graph graph; 
-	LinkedList<Point[]> theMST;
+	Graph graph;
 	
 
 	enum State{
-		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT, MST;
+		NODE, ADD_EDGE_1, ADD_EDGE_2, DELETE, EDIT;
 	}
 	State state;
 	private boolean onVertex;
@@ -47,14 +46,13 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 		vertices = new LinkedList<>();
 		edges = new LinkedList<>();
 		edgeWeights = new LinkedList<>();
-		graph = new Graph(vertices.size(), edges.size());
-		theMST = new LinkedList<>();
 		onVertex = false;
 		onEdge = false;
 		selectedV1 = null;
 		clickedV1 = null;
 		clickedV2 = null;
 		selectedE1 = null;
+		graph = null;
 		state = State.NODE;
 		//create a content pane
 		Container contentPane = getContentPane();
@@ -94,14 +92,21 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			clickedV1 = null;
 			state = State.NODE;
 			enterWeight.setText("");
+			graph = null;
 			canvas.repaint();
 		}
 		else if (buttonIdentifier.equals("computeMST")){
-			if(state != State.MST){
-				state = State.MST;
-				canvas.repaint();
+			graph = new Graph(vertices.size(), edges.size()); 
+			for(int i = 0; i < edges.size(); i++){
+				Point from = edges.get(i)[0];
+				Point to = edges.get(i)[1];
+				int f = vertices.indexOf(from);
+				int t = vertices.indexOf(to);
+				graph.edge[i].from = f;
+				graph.edge[i].to = t;
+				graph.edge[i].weight = edgeWeights.get(i);
 			}
-
+			canvas.repaint();
 		}
 		else if (buttonIdentifier.equals("addEdge")){
 			if(state != State.ADD_EDGE_1 || state != State.ADD_EDGE_2){
@@ -156,17 +161,15 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 				clickedV2 = selectedV1;
 				Point[] points = {clickedV1, clickedV2};
 				edges.add(points);
-				graph.edge[count].from = clickedV1;
-				graph.edge[count].to = clickedV2;
 				count++;
 				w = enterWeight.getText();
 				if(isParsable(w)){
 					edgeWeights.add(Integer.parseInt(w));
-					graph.edge[count].weight = Integer.parseInt(w);
+					//graph.edge[count].weight = Integer.parseInt(w);
 				}
 				else
 					edgeWeights.add(1);
-					graph.edge[count].weight = 1;
+					//graph.edge[count].weight = 1;
 			}
 			else{
 				clickedV1 = null;
@@ -189,9 +192,6 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 			}
 			else
 				clickedE1 = null;
-		}
-		else if(state == State.MST){
-			theMST = graph.getMST();
 		}
 		canvas.repaint();
     }
@@ -394,8 +394,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
 
         // Class to represent an edge in graph
         class Edge implements Comparable<Edge>{ 
-			Point from, to;
-            int weight; 
+			int from, to, weight; 
     
             // Comparator for sorting edges by weight 
             public int compareTo(Edge compareEdge) 
@@ -406,8 +405,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
     
         // Class to represent a subset for union-find 
         class Subset{ 
-			int rank; 
-			Point parent;
+            int parent, rank; 
         }; 
     
         int V, E;    
@@ -424,7 +422,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
         } 
     
         // Finds set of an element 
-        Point find(Subset subsets[], int i) 
+        int find(Subset subsets[], int i) 
         { 
             if (subsets[i].parent != i){
                 subsets[i].parent = find(subsets, subsets[i].parent); 
@@ -453,7 +451,7 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
         } 
     
         // Find MST using Kruskal's algorithm 
-        LinkedList<Point[]> getMST() {
+        Edge[] KruskalMST() {
 
             Edge result[] = new Edge[V];  
             int j = 0;  
@@ -493,17 +491,8 @@ public class Kruskal extends JFrame implements ActionListener, MouseListener, Mo
                     Union(subsets, x, y); 
                 } 
             } 
-			
-			LinkedList<Point[]> mst = new LinkedList<Point[]>();
-			Point[] mstPoints = new Point[j];
-			for (i = 0; i < j; ++i){
-				mstPoints[0] = result[i].from;
-				mstPoints[1] = result[i].to;
-				mst.add(mstPoints);
-			}
 
-			return mst;
-			
+            return result;
         }
 
     }
