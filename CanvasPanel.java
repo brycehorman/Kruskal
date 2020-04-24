@@ -68,9 +68,9 @@ public class CanvasPanel extends JPanel{
 
 		if(selectedE1 != null){
 		
-			// edge becomes yellow when mouse is hovered over it
+			// edge becomes blue when mouse is hovered over it
 			if(parent.state == Kruskal.State.DELETE || parent.state == Kruskal.State.EDIT){
-				g.setColor(Color.yellow);
+				g.setColor(Color.blue);
 				g.drawLine(selectedE1[0].x, selectedE1[0].y, selectedE1[1].x, selectedE1[1].y);
 				g.drawString("w= "+edgeWeights.get(edges.indexOf(selectedE1)), ((selectedE1[0].x + selectedE1[1].x)/2)+10, 
 							((selectedE1[0].y + selectedE1[1].y)/2)+10);
